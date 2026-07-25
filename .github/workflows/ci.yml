@@ -13,6 +13,7 @@ on:
 env:
   NODE_VERSION: "20"
   RUST_VERSION: "nightly"
+  CARGO_TERM_COLOR: always
 
 jobs:
   # ─── Frontend ──────────────────────────────────────────────────────────
@@ -22,6 +23,7 @@ jobs:
     strategy:
       matrix:
         command: [lint, typecheck, test, build]
+      fail-fast: false
 
     steps:
       - uses: actions/checkout@v4
@@ -30,8 +32,13 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
-      - run: npm ci
-      - run: npm run ${{ matrix.command }}
+      - name: Install dependencies
+        run: npm ci
+        timeout-minutes: 5
+
+      - name: Run ${{ matrix.command }}
+        run: npm run ${{ matrix.command }}
+        timeout-minutes: 10
 
   # ─── Smart Contracts ──────────────────────────────────────────────────
   contracts:
@@ -46,22 +53,30 @@ jobs:
           - treasury
           - swap_registry
           - event
+      fail-fast: false
 
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: ${{ env.RUST_VERSION }}
-          target: wasm32v1-none
 
-      - name: Build ${{ matrix.contract }}
-        working-directory: contracts/${{ matrix.contract }}
-        run: cargo build --target wasm32v1-none --release 2>&1 | tail -10
+      - name: Install wasm32v1-none target
+        run: rustup target add wasm32v1-none
+        timeout-minutes: 2
 
-      - name: Test ${{ matrix.contract }}
+      - name: Build ${{ matrix.contract }} (wasm32v1-none)
         working-directory: contracts/${{ matrix.contract }}
-        run: cargo test 2>&1 | tail -10
+        run: cargo build --target wasm32v1-none --release 2>&1
+        timeout-minutes: 20
+        continue-on-error: false
+
+      - name: Test ${{ matrix.contract }} (native)
+        working-directory: contracts/${{ matrix.contract }}
+        run: cargo test 2>&1
+        timeout-minutes: 20
 
   # ─── Quality Gate ─────────────────────────────────────────────────────
   quality-gate:
@@ -71,6 +86,33 @@ jobs:
     if: always()
     steps:
       - run: |
-          echo "Frontend: ${{ needs.frontend.result }}"
-          echo "Contracts: ${{ needs.contracts.result }}"
-          [ "${{ needs.frontend.result }}" = "success" ] && [ "${{ needs.contracts.result }}" = "success" ] && exit 0 || exit 1
+          echo "╔════════════════════════════════════════╗"
+          echo "║   Quality Gate Results                 ║"
+          echo "╚════════════════════════════════════════╝"
+          echo "Frontend (lint): ${{ needs.frontend.result[0] || needs.frontend.outputs.status }}"
+          echo "Frontend (typecheck): ${{ needs.frontend.result[1] || needs.frontend.outputs.status }}"
+          echo "Frontend (test): ${{ needs.frontend.result[2] || needs.frontend.outputs.status }}"
+          echo "Frontend (build): ${{ needs.frontend.result[3] || needs.frontend.outputs.status }}"
+          echo "Contracts (router): ${{ needs.contracts.result[0] || needs.contracts.outputs.status }}"
+          echo "Contracts (liquidity_pool): ${{ needs.contracts.result[1] || needs.contracts.outputs.status }}"
+          echo "Contracts (fee_vault): ${{ needs.contracts.result[2] || needs.contracts.outputs.status }}"
+          echo "Contracts (treasury): ${{ needs.contracts.result[3] || needs.contracts.outputs.status }}"
+          echo "Contracts (swap_registry): ${{ needs.contracts.result[4] || needs.contracts.outputs.status }}"
+          echo "Contracts (event): ${{ needs.contracts.result[5] || needs.contracts.outputs.status }}"
+          echo "---"
+          
+          # Check each matrix result
+          ALL_PASSED=true
+          for result in ${{ toJSON(needs.frontend.result) }} ${{ toJSON(needs.contracts.result) }}; do
+            if [ "$result" != "success" ]; then
+              ALL_PASSED=false
+            fi
+          done
+          
+          if [ "$ALL_PASSED" = true ]; then
+            echo "✅ ALL JOBS PASSED"
+            exit 0
+          else
+            echo "❌ SOME JOBS FAILED"
+            exit 1
+          fi
