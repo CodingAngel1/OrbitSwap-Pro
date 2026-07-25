@@ -1,6 +1,4 @@
 # OrbitSwap Pro - CI/CD Pipeline
-#
-# Automates: install, lint, typecheck, frontend tests, contract build, contract tests
 
 name: CI/CD Pipeline
 
@@ -13,106 +11,194 @@ on:
 env:
   NODE_VERSION: "20"
   RUST_VERSION: "nightly"
-  CARGO_TERM_COLOR: always
 
 jobs:
   # ─── Frontend ──────────────────────────────────────────────────────────
-  frontend:
-    name: Frontend (${{ matrix.command }})
+  frontend-lint:
+    name: Frontend Lint
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        command: [lint, typecheck, test, build]
-      fail-fast: false
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
+      - run: npm ci
+      - run: npm run lint
 
-      - name: Install dependencies
-        run: npm ci
-        timeout-minutes: 5
-
-      - name: Run ${{ matrix.command }}
-        run: npm run ${{ matrix.command }}
-        timeout-minutes: 10
-
-  # ─── Smart Contracts ──────────────────────────────────────────────────
-  contracts:
-    name: Contracts (${{ matrix.contract }})
+  frontend-typecheck:
+    name: Frontend Typecheck
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        contract:
-          - router
-          - liquidity_pool
-          - fee_vault
-          - treasury
-          - swap_registry
-          - event
-      fail-fast: false
-
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - run: npm ci
+      - run: npm run typecheck
 
-      - name: Setup Rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+  frontend-test:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - run: npm ci
+      - run: npm run test:run
+
+  frontend-build:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - run: npm ci
+      - run: npm run build
+
+  # ─── Smart Contracts ──────────────────────────────────────────────────
+  contract-router:
+    name: Contract Router
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: ${{ env.RUST_VERSION }}
+      - run: rustup target add wasm32v1-none
+      - run: cargo build --target wasm32v1-none --release
+        working-directory: contracts/router
+      - run: cargo test
+        working-directory: contracts/router
 
-      - name: Install wasm32v1-none target
-        run: rustup target add wasm32v1-none
-        timeout-minutes: 2
+  contract-liquidity-pool:
+    name: Contract LP
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+      - run: rustup target add wasm32v1-none
+      - run: cargo build --target wasm32v1-none --release
+        working-directory: contracts/liquidity_pool
+      - run: cargo test
+        working-directory: contracts/liquidity_pool
 
-      - name: Build ${{ matrix.contract }} (wasm32v1-none)
-        working-directory: contracts/${{ matrix.contract }}
-        run: cargo build --target wasm32v1-none --release 2>&1
-        timeout-minutes: 20
-        continue-on-error: false
+  contract-fee-vault:
+    name: Contract FeeVault
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+      - run: rustup target add wasm32v1-none
+      - run: cargo build --target wasm32v1-none --release
+        working-directory: contracts/fee_vault
+      - run: cargo test
+        working-directory: contracts/fee_vault
 
-      - name: Test ${{ matrix.contract }} (native)
-        working-directory: contracts/${{ matrix.contract }}
-        run: cargo test 2>&1
-        timeout-minutes: 20
+  contract-treasury:
+    name: Contract Treasury
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+      - run: rustup target add wasm32v1-none
+      - run: cargo build --target wasm32v1-none --release
+        working-directory: contracts/treasury
+      - run: cargo test
+        working-directory: contracts/treasury
+
+  contract-swap-registry:
+    name: Contract SwapRegistry
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+      - run: rustup target add wasm32v1-none
+      - run: cargo build --target wasm32v1-none --release
+        working-directory: contracts/swap_registry
+      - run: cargo test
+        working-directory: contracts/swap_registry
+
+  contract-event:
+    name: Contract Event
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+      - run: rustup target add wasm32v1-none
+      - run: cargo build --target wasm32v1-none --release
+        working-directory: contracts/event
+      - run: cargo test
+        working-directory: contracts/event
 
   # ─── Quality Gate ─────────────────────────────────────────────────────
   quality-gate:
     name: Quality Gate
     runs-on: ubuntu-latest
-    needs: [frontend, contracts]
+    needs:
+      - frontend-lint
+      - frontend-typecheck
+      - frontend-test
+      - frontend-build
+      - contract-router
+      - contract-liquidity-pool
+      - contract-fee-vault
+      - contract-treasury
+      - contract-swap-registry
+      - contract-event
     if: always()
     steps:
       - run: |
-          echo "╔════════════════════════════════════════╗"
-          echo "║   Quality Gate Results                 ║"
-          echo "╚════════════════════════════════════════╝"
-          echo "Frontend (lint): ${{ needs.frontend.result[0] || needs.frontend.outputs.status }}"
-          echo "Frontend (typecheck): ${{ needs.frontend.result[1] || needs.frontend.outputs.status }}"
-          echo "Frontend (test): ${{ needs.frontend.result[2] || needs.frontend.outputs.status }}"
-          echo "Frontend (build): ${{ needs.frontend.result[3] || needs.frontend.outputs.status }}"
-          echo "Contracts (router): ${{ needs.contracts.result[0] || needs.contracts.outputs.status }}"
-          echo "Contracts (liquidity_pool): ${{ needs.contracts.result[1] || needs.contracts.outputs.status }}"
-          echo "Contracts (fee_vault): ${{ needs.contracts.result[2] || needs.contracts.outputs.status }}"
-          echo "Contracts (treasury): ${{ needs.contracts.result[3] || needs.contracts.outputs.status }}"
-          echo "Contracts (swap_registry): ${{ needs.contracts.result[4] || needs.contracts.outputs.status }}"
-          echo "Contracts (event): ${{ needs.contracts.result[5] || needs.contracts.outputs.status }}"
-          echo "---"
+          echo "=== Quality Gate ==="
+          echo "Frontend Lint:    ${{ needs.frontend-lint.result }}"
+          echo "Frontend Type:    ${{ needs.frontend-typecheck.result }}"
+          echo "Frontend Tests:   ${{ needs.frontend-test.result }}"
+          echo "Frontend Build:   ${{ needs.frontend-build.result }}"
+          echo "Router:           ${{ needs.contract-router.result }}"
+          echo "LiquidityPool:    ${{ needs.contract-liquidity-pool.result }}"
+          echo "FeeVault:         ${{ needs.contract-fee-vault.result }}"
+          echo "Treasury:         ${{ needs.contract-treasury.result }}"
+          echo "SwapRegistry:     ${{ needs.contract-swap-registry.result }}"
+          echo "Event:            ${{ needs.contract-event.result }}"
+          echo "=================="
           
-          # Check each matrix result
-          ALL_PASSED=true
-          for result in ${{ toJSON(needs.frontend.result) }} ${{ toJSON(needs.contracts.result) }}; do
-            if [ "$result" != "success" ]; then
-              ALL_PASSED=false
+          FAILED=false
+          for job in \
+            "${{ needs.frontend-lint.result }}" \
+            "${{ needs.frontend-typecheck.result }}" \
+            "${{ needs.frontend-test.result }}" \
+            "${{ needs.frontend-build.result }}" \
+            "${{ needs.contract-router.result }}" \
+            "${{ needs.contract-liquidity-pool.result }}" \
+            "${{ needs.contract-fee-vault.result }}" \
+            "${{ needs.contract-treasury.result }}" \
+            "${{ needs.contract-swap-registry.result }}" \
+            "${{ needs.contract-event.result }}"; do
+            if [ "$job" != "success" ]; then
+              FAILED=true
             fi
           done
           
-          if [ "$ALL_PASSED" = true ]; then
-            echo "✅ ALL JOBS PASSED"
-            exit 0
-          else
-            echo "❌ SOME JOBS FAILED"
+          if [ "$FAILED" = "true" ]; then
+            echo "❌ Some jobs failed"
             exit 1
+          else
+            echo "✅ All 10 jobs passed!"
+            exit 0
           fi
