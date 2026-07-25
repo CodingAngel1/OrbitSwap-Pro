@@ -127,18 +127,20 @@ export async function executeContractMethod(
 
 /**
  * Initialize the router contract.
+ * The Router orchestrates calls to LiquidityPool, SwapRegistry, FeeVault, and Event.
  */
 export async function initializeRouter(
   routerId: string,
   adminAddress: string,
   lpPoolId: string,
-  feeVaultId: string,
   swapRegistryId: string,
+  feeVaultId: string,
+  eventId: string,
 ): Promise<string> {
   return executeContractMethod(
     "router",
-    "initialize",
-    [adminAddress, lpPoolId, feeVaultId, swapRegistryId],
+    "init",
+    [adminAddress, lpPoolId, swapRegistryId, feeVaultId, eventId],
     adminAddress,
   );
 }
@@ -155,7 +157,7 @@ export async function initializeLiquidityPool(
 ): Promise<string> {
   return executeContractMethod(
     "liquidityPool",
-    "initialize",
+    "init",
     [adminAddress, tokenA, tokenB, feeBps],
     adminAddress,
   );
@@ -171,7 +173,7 @@ export async function initializeFeeVault(
 ): Promise<string> {
   return executeContractMethod(
     "feeVault",
-    "initialize",
+    "init",
     [adminAddress, treasuryId],
     adminAddress,
   );
@@ -186,7 +188,7 @@ export async function initializeTreasury(
 ): Promise<string> {
   return executeContractMethod(
     "treasury",
-    "initialize",
+    "init",
     [adminAddress],
     adminAddress,
   );
@@ -201,7 +203,22 @@ export async function initializeSwapRegistry(
 ): Promise<string> {
   return executeContractMethod(
     "swapRegistry",
-    "initialize",
+    "init",
+    [adminAddress],
+    adminAddress,
+  );
+}
+
+/**
+ * Initialize the event contract.
+ */
+export async function initializeEvent(
+  eventId: string,
+  adminAddress: string,
+): Promise<string> {
+  return executeContractMethod(
+    "event",
+    "init",
     [adminAddress],
     adminAddress,
   );
