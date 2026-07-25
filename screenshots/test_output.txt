@@ -1,0 +1,16 @@
+
+> orbitswap-pro@1.0.0 test:run
+> vitest run
+
+
+ RUN  v2.1.9 /workspaces/OrbitSwap-Pro
+
+ ✓ src/__tests__/utils.test.ts (46 tests) 27ms
+ ✓ src/__tests__/components.test.tsx (18 tests) 73ms
+ ✓ src/__tests__/services.test.ts (10 tests) 31ms
+
+ Test Files  3 passed (3)
+      Tests  74 passed (74)
+   Start at  23:20:10
+   Duration  3.63s (transform 214ms, setup 0ms, collect 889ms, tests 131ms, environment 1.81s, prepare 269ms)
+

@@ -401,10 +401,10 @@ Each contract crate includes unit tests for:
 | Minimum 10+ meaningful commits | ✅ | 10+ commits covering full project history |
 | Live demo link | ✅ | [OrbitSwap Pro Live](https://effervescent-frangollo-fda9e7.netlify.app) |
 | Contract deployment address | ✅ | 6 contracts deployed (see table above) |
-| Transaction hash for interaction | 📝 | Submit demo transaction via Router.swap_exact_in() |
-| Mobile responsive UI screenshot | 📝 | Run `npm run dev` and capture mobile viewport |
-| CI/CD pipeline screenshot | 📝 | Push to GitHub, view Actions tab |
-| Test output screenshot | 📝 | Run `npm run test:run` and capture output |
+| Transaction hash for interaction | ✅ | [`93fb009761...`](https://stellar.expert/explorer/testnet/tx/93fb0097611e4835bf3182940deabf3c4279fa0121b8f564d6a200dffa947b47) |
+| Mobile responsive UI screenshot | ✅ | [`screenshots/mobile-home.png`](screenshots/mobile-home.png) |
+| CI/CD pipeline screenshot | 📝 | Check [GitHub Actions](https://github.com/CodingAngel1/OrbitSwap-Pro/actions) for pipeline status |
+| Test output screenshot | ✅ | [`screenshots/test_results.txt`](screenshots/test_results.txt) — 74 tests passing |
 | Demo video link (1–2 min) | 📝 | Record walkthrough covering: wallet connect, swap, mobile, CI/CD |
 
 ---
