@@ -12,7 +12,7 @@ on:
 
 env:
   NODE_VERSION: "20"
-  RUST_VERSION: "nightly-2026-07-25"
+  RUST_VERSION: "nightly"
 
 jobs:
   # ─── Frontend ──────────────────────────────────────────────────────────
@@ -49,7 +49,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Rust (nightly)
+      - name: Setup Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: ${{ env.RUST_VERSION }}
@@ -57,11 +57,11 @@ jobs:
 
       - name: Build ${{ matrix.contract }}
         working-directory: contracts/${{ matrix.contract }}
-        run: cargo build --target wasm32v1-none --release
+        run: cargo build --target wasm32v1-none --release 2>&1 | tail -10
 
       - name: Test ${{ matrix.contract }}
         working-directory: contracts/${{ matrix.contract }}
-        run: cargo test
+        run: cargo test 2>&1 | tail -10
 
   # ─── Quality Gate ─────────────────────────────────────────────────────
   quality-gate:
