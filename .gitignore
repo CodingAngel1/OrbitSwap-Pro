@@ -23,3 +23,11 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+.netlify
+
+# Rust / Soroban contracts build artifacts
+contracts/*/target/
+contracts/target/
+
+# Environment files (contains secrets)
+.env
