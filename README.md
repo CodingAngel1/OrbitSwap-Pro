@@ -231,13 +231,32 @@ The deploy script handles all 6 contracts in dependency order:
 5. **FeeVault** — Depends on Treasury address
 6. **Router** — Depends on all other addresses (orchestrator)
 
+### Deployed Contracts (Stellar Testnet)
+
+| Contract | Address | Explorer |
+|----------|---------|----------|
+| **Router** | `CAINMCY5LCZUWJPOYZOFH6HHE5PMAD3G5X7ZLXESRVRSSTPU365ZVTM3` | [View](https://lab.stellar.org/r/testnet/contract/CAINMCY5LCZUWJPOYZOFH6HHE5PMAD3G5X7ZLXESRVRSSTPU365ZVTM3) |
+| **LiquidityPool** | `CDIAKY3E4CST5LIVOSL52XQEP4RQF7W6R3I7NDL55THN2FKULHBKNVMW` | [View](https://lab.stellar.org/r/testnet/contract/CDIAKY3E4CST5LIVOSL52XQEP4RQF7W6R3I7NDL55THN2FKULHBKNVMW) |
+| **FeeVault** | `CAEQWR57QAINUHFUQYQ36F2EXOLQSWY6FYCAFTDXWQJZLPIIQCBV4RE2` | [View](https://lab.stellar.org/r/testnet/contract/CAEQWR57QAINUHFUQYQ36F2EXOLQSWY6FYCAFTDXWQJZLPIIQCBV4RE2) |
+| **Treasury** | `CAH44YXPONVBZVJ7KLXSTOHX4CZ7SJZEFRB6ATYGRH4YJCNHVMBW7BJQ` | [View](https://lab.stellar.org/r/testnet/contract/CAH44YXPONVBZVJ7KLXSTOHX4CZ7SJZEFRB6ATYGRH4YJCNHVMBW7BJQ) |
+| **SwapRegistry** | `CB55SKTW3HZYBCQX5UMVAWLS34AZF7GTJL2J7TXLPPHYDVBNQKILC5ZX` | [View](https://lab.stellar.org/r/testnet/contract/CB55SKTW3HZYBCQX5UMVAWLS34AZF7GTJL2J7TXLPPHYDVBNQKILC5ZX) |
+| **Event** | `CCLGLC6KQQBKC4YFT3PVGVFHQWTMS3TTIG3WFQ66HDTBCBKRDLDMFZ2G` | [View](https://lab.stellar.org/r/testnet/contract/CCLGLC6KQQBKC4YFT3PVGVFHQWTMS3TTIG3WFQ66HDTBCBKRDLDMFZ2G) |
+
 ### Funded Testnet Account
 
 ```
-Public key: GC7OUAIVVTBE7I45P77GO3TNRHBXLL6VVSMYF2CN5XGZVEP5EUYISGBP
+Public key: GC27D5GQCRD5HWLJSWCCIQWDBA2OPA5BXWM7LGEIMQX7MKOWABWTX65P
 Funded via: https://friendbot.stellar.org
-Tx hash:    0e4494fc0ae526ba3eb47f421fc2d102c771ca8a389bfb67f9ca8757794f7f42
+Tx hash:    04a3f9623ebea882878bed3a1b540f5509935c745c6c05fe02d202e1ba708898
 ```
+
+### Contract Initialization Transactions
+
+| Contract | Init Transaction |
+|----------|------------------|
+| **Router** | [5d310a83...](https://stellar.expert/explorer/testnet/tx/5d310a8338520cdd30f67b5db49291fda78087de138472fd110f00c62d5f3485) |
+| **FeeVault** | [b01c999e...](https://stellar.expert/explorer/testnet/tx/b01c999ec8959fbf7b250b892c02c5e5e0513c0685e620ba30fe46d7f5c3efed) |
+| **LiquidityPool** | [a1ec10d6...](https://stellar.expert/explorer/testnet/tx/a1ec10d6246284430c121f94bddf66f34a3ef53a23b7a10fa66ff59fcbc966d1) |
 
 ---
 
@@ -377,26 +396,16 @@ Each contract crate includes unit tests for:
 
 | Requirement | Status | Notes |
 |-------------|--------|-------|
-| Public GitHub repository | ✅ | Push to GitHub after local setup |
-| README with complete documentation | ✅ | This file — architecture, setup, deployment |
-| Minimum 10+ meaningful commits | ✅ | 10 commits covering full project history |
-| Live demo link | 📝 | Deploy to Vercel/Netlify (see below) |
-| Contract deployment address | 📝 | Run deploy.sh with funded account |
-| Transaction hash for interaction | 📝 | Submit demo transaction via Router |
-| Mobile responsive UI screenshot | 📝 | Capture from mobile viewport |
-| CI/CD pipeline screenshot | 📝 | Capture from GitHub Actions |
-| Test output screenshot | 📝 | 74 tests passing |
-| Demo video link (1–2 min) | 📝 | Record walkthrough |
-
-### Deploy Frontend to Vercel
-
-```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Deploy
-vercel --prod
-```
+| Public GitHub repository | ✅ | `github.com/CodingAngel1/OrbitSwap-Pro` |
+| README with complete documentation | ✅ | Architecture, setup, deployment, features |
+| Minimum 10+ meaningful commits | ✅ | 10+ commits covering full project history |
+| Live demo link | ✅ | [OrbitSwap Pro Live](https://effervescent-frangollo-fda9e7.netlify.app) |
+| Contract deployment address | ✅ | 6 contracts deployed (see table above) |
+| Transaction hash for interaction | 📝 | Submit demo transaction via Router.swap_exact_in() |
+| Mobile responsive UI screenshot | 📝 | Run `npm run dev` and capture mobile viewport |
+| CI/CD pipeline screenshot | 📝 | Push to GitHub, view Actions tab |
+| Test output screenshot | 📝 | Run `npm run test:run` and capture output |
+| Demo video link (1–2 min) | 📝 | Record walkthrough covering: wallet connect, swap, mobile, CI/CD |
 
 ---
 
