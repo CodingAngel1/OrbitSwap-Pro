@@ -1,0 +1,10 @@
+/workspaces/OrbitSwap-Pro/contracts/swap_registry/target/release/deps/soroban_spec_rust-ebf563eef98652a9.d: /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/soroban-spec-rust-27.0.2/src/lib.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/soroban-spec-rust-27.0.2/src/syn_ext.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/soroban-spec-rust-27.0.2/src/trait.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/soroban-spec-rust-27.0.2/src/types.rs
+
+/workspaces/OrbitSwap-Pro/contracts/swap_registry/target/release/deps/libsoroban_spec_rust-ebf563eef98652a9.rlib: /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/soroban-spec-rust-27.0.2/src/lib.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/soroban-spec-rust-27.0.2/src/syn_ext.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/soroban-spec-rust-27.0.2/src/trait.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/soroban-spec-rust-27.0.2/src/types.rs
+
+/workspaces/OrbitSwap-Pro/contracts/swap_registry/target/release/deps/libsoroban_spec_rust-ebf563eef98652a9.rmeta: /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/soroban-spec-rust-27.0.2/src/lib.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/soroban-spec-rust-27.0.2/src/syn_ext.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/soroban-spec-rust-27.0.2/src/trait.rs /home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/soroban-spec-rust-27.0.2/src/types.rs
+
+/home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/soroban-spec-rust-27.0.2/src/lib.rs:
+/home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/soroban-spec-rust-27.0.2/src/syn_ext.rs:
+/home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/soroban-spec-rust-27.0.2/src/trait.rs:
+/home/codespace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/soroban-spec-rust-27.0.2/src/types.rs:
