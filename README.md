@@ -405,7 +405,7 @@ Each contract crate includes unit tests for:
 | Mobile responsive UI screenshot | ✅ | [`screenshots/mobile-home.png`](screenshots/mobile-home.png) |
 | CI/CD pipeline screenshot | 📝 | Check [GitHub Actions](https://github.com/CodingAngel1/OrbitSwap-Pro/actions) for pipeline status |
 | Test output screenshot | ✅ | [`screenshots/test_results.txt`](screenshots/test_results.txt) — 74 tests passing |
-| Demo video link (1–2 min) | 📝 | Record walkthrough covering: wallet connect, swap, mobile, CI/CD |
+| Demo video link (1–2 min) | ✅ | [`screenshots/demo.mp4`](screenshots/demo.mp4) — see walkthrough below |
 
 ---
 
