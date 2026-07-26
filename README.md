@@ -7,6 +7,9 @@
   <a href="https://effervescent-frangollo-fda9e7.netlify.app">
     <img src="https://img.shields.io/badge/deploy-Netlify%20Live-00C7B7?logo=netlify&style=flat-square" alt="Netlify Deploy" />
   </a>
+  <a href="screenshots/demo.mp4">
+    <img src="https://img.shields.io/badge/demo-Watch%20Video%20(2m)-FF6B6B?logo=vimeo&logoColor=white" alt="Demo Video" />
+  </a>
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License" />
   </a>
