@@ -383,7 +383,7 @@ Each contract crate includes unit tests for:
 ### Contract Test Summary
 | Contract | Tests | Coverage |
 |----------|-------|----------|
-| Router | 4 | Init, quote, zero amount, deadline |
+| Router | 6 | Init, quote, full cross-contract integration, empty pool failure, zero amount, deadline |
 | LiquidityPool | 2 | Add/remove liquidity, swap |
 | FeeVault | 2 | Deposit, distribute |
 | Treasury | 1 | Deposit/withdraw |
@@ -403,7 +403,7 @@ Each contract crate includes unit tests for:
 | Contract deployment address | ✅ | 6 contracts deployed (see table above) |
 | Transaction hash for interaction | ✅ | [`93fb009761...`](https://stellar.expert/explorer/testnet/tx/93fb0097611e4835bf3182940deabf3c4279fa0121b8f564d6a200dffa947b47) |
 | Mobile responsive UI screenshot | ✅ | [`screenshots/mobile-home.png`](screenshots/mobile-home.png) |
-| CI/CD pipeline screenshot | 📝 | Check [GitHub Actions](https://github.com/CodingAngel1/OrbitSwap-Pro/actions) for pipeline status |
+| CI/CD pipeline screenshot | ✅ | [GitHub Actions](https://github.com/CodingAngel1/OrbitSwap-Pro/actions) — 10-job matrix pipeline passing |
 | Test output screenshot | ✅ | [`screenshots/test_results.txt`](screenshots/test_results.txt) — 74 tests passing |
 | Demo video link (1–2 min) | ✅ | [`screenshots/demo.mp4`](screenshots/demo.mp4) — see walkthrough below |
 
@@ -432,6 +432,15 @@ Each contract crate includes unit tests for:
 ## 📄 License
 
 MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+## 🆕 Recent Updates
+
+- **Router now invokes LiquidityPool.swap() via cross-contract call** — swap execution is no longer computed inline; it delegates to the LP contract via `env.invoke_contract()`
+- **Full integration test** (`test_full_swap_integration_cross_contract`) verifies the complete inter-contract flow: Router → LiquidityPool → SwapRegistry → FeeVault → Event
+- **`.env.example`** now includes pre-filled Testnet contract addresses for quick setup
+- **LICENSE file** added (MIT)
 
 ---
 

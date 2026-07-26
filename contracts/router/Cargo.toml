@@ -18,3 +18,7 @@ strip = "symbols"
 
 [dev-dependencies]
 soroban-sdk = { version = "27.0.0", features = ["testutils"] }
+orbitswap-liquidity-pool = { path = "../liquidity_pool" }
+orbitswap-swap-registry = { path = "../swap_registry" }
+orbitswap-fee-vault = { path = "../fee_vault" }
+orbitswap-event = { path = "../event" }

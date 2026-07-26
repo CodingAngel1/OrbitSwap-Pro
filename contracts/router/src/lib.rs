@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, contracterror, panic_with_error, Address, Env, Symbol, Vec, Val, IntoVal};
+use soroban_sdk::{contract, contractimpl, contracttype, contracterror, panic_with_error, Address, Env, Symbol, Vec, Val, IntoVal, TryIntoVal};
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -9,7 +9,7 @@ pub enum Error {
     AlreadyInitialized = 3,
     InvalidAmount = 102,
     SameAssetSwap = 109,
-    SlippageExceeded = 103,
+    SlippageExceeded = 103, // Reserved: LP contract handles slippage validation
     DeadlineExpired = 104,
     InvalidPool = 201,
     CrossContractFailed = 301,
@@ -87,12 +87,38 @@ impl RouterContract {
         let vault: Address = env.storage().instance().get(&Symbol::new(&env, "vault")).expect("no vault");
         let evt: Address = env.storage().instance().get(&Symbol::new(&env, "evt")).expect("no evt");
 
-        // ─── Compute swap using constant product formula ─────────────────
-        let fee = in_amount * 30 / 10000;        // 0.3% fee
-        let out = (in_amount - fee) * 100000 / (1000000 + in_amount - fee);
-        if out < min_out { panic_with_error!(env, Error::SlippageExceeded); }
+        // ─── Step 1: Call LiquidityPool.swap() (cross-contract) ──────────
+        let lp_addr: Address = env.storage().instance().get(&Symbol::new(&env, "lp")).expect("no lp");
 
-        // ─── Step 1: Call SwapRegistry.record() ──────────────────────────
+        let mut swap_args: Vec<Val> = Vec::new(&env);
+        swap_args.push_back(in_asset.clone().into_val(&env));
+        swap_args.push_back(out_asset.clone().into_val(&env));
+        swap_args.push_back(in_amount.into_val(&env));
+        swap_args.push_back(min_out.into_val(&env));
+
+        let swap_result_val: Val = env.invoke_contract(&lp_addr, &Symbol::new(&env, "swap"), swap_args);
+
+        // Deserialize (i128, i128) tuple from LP — encoded as Vec<Val>
+        let result_vec: Vec<Val> = match swap_result_val.try_into_val(&env) {
+            Ok(v) => v,
+            Err(_) => panic_with_error!(env, Error::CrossContractFailed),
+        };
+        let out: i128 = match result_vec.get(0) {
+            Some(v) => match v.try_into_val(&env) {
+                Ok(val) => val,
+                Err(_) => panic_with_error!(env, Error::CrossContractFailed),
+            },
+            None => panic_with_error!(env, Error::CrossContractFailed),
+        };
+        let fee: i128 = match result_vec.get(1) {
+            Some(v) => match v.try_into_val(&env) {
+                Ok(val) => val,
+                Err(_) => panic_with_error!(env, Error::CrossContractFailed),
+            },
+            None => panic_with_error!(env, Error::CrossContractFailed),
+        };
+
+        // ─── Step 2: Call SwapRegistry.record() ──────────────────────────
         // Demonstrates cross-contract communication with simple types
         let mut reg_args: Vec<Val> = Vec::new(&env);
         reg_args.push_back(sender.clone().into_val(&env));
@@ -103,12 +129,12 @@ impl RouterContract {
         reg_args.push_back(fee.into_val(&env));
         let _: Val = env.invoke_contract(&registry, &Symbol::new(&env, "record"), reg_args);
 
-        // ─── Step 2: Call FeeVault.deposit_fee() ─────────────────────────
+        // ─── Step 3: Call FeeVault.deposit_fee() ─────────────────────────
         let mut fee_args: Vec<Val> = Vec::new(&env);
         fee_args.push_back(fee.into_val(&env));
         let _: Val = env.invoke_contract(&vault, &Symbol::new(&env, "deposit_fee"), fee_args);
 
-        // ─── Step 3: Call Event.emit_swap() ──────────────────────────────
+        // ─── Step 4: Call Event.emit_swap() ──────────────────────────────
         let mut evt_args: Vec<Val> = Vec::new(&env);
         evt_args.push_back(sender.into_val(&env));
         evt_args.push_back(in_asset.code.into_val(&env));
@@ -177,6 +203,13 @@ mod test {
     use super::*;
     use soroban_sdk::testutils::{Address as _, Ledger as _};
     use soroban_sdk::IntoVal as _;
+    use core::cell::Cell;
+
+    // Import dependent contracts for integration testing
+    use orbitswap_liquidity_pool::PoolContract;
+    use orbitswap_swap_registry::RegistryContract;
+    use orbitswap_fee_vault::VaultContract;
+    use orbitswap_event::EventContract;
 
     #[test]
     fn test_swap_with_intercontract() {
@@ -206,6 +239,152 @@ mod test {
 
         let quote = RouterContract::get_quote(env.clone(), xlm.clone(), usdc.clone(), 1000);
         assert!(quote.expected > 0);
+    }
+
+    /// Full integration test: Router → LiquidityPool → Registry → FeeVault → Event
+    #[test]
+    fn test_full_swap_integration_cross_contract() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let admin = Address::generate(&env);
+        let user = Address::generate(&env);
+        let provider = Address::generate(&env);
+
+        // ─── Assets ──────────────────────────────────────────────────
+        let xlm = Asset { code: Symbol::new(&env, "XLM"), issuer: None };
+        let usdc = Asset { code: Symbol::new(&env, "USDC"), issuer: None };
+
+        // LP uses its own Asset type — same struct shape, compatible for cross-contract
+        let lp_xlm = orbitswap_liquidity_pool::Asset { code: Symbol::new(&env, "XLM"), issuer: None };
+        let lp_usdc = orbitswap_liquidity_pool::Asset { code: Symbol::new(&env, "USDC"), issuer: None };
+
+        // ─── Register all dependent contracts ────────────────────────
+        let lp_id = env.register_contract(None, PoolContract);
+        let registry_id = env.register_contract(None, RegistryContract);
+        let vault_id = env.register_contract(None, VaultContract);
+        let event_id = env.register_contract(None, EventContract);
+
+        // ─── Initialize dependent contracts ──────────────────────────
+        PoolContract::init(&env, &lp_id, &admin, lp_xlm.clone(), lp_usdc.clone(), 30);
+        RegistryContract::init(&env, &registry_id, &admin);
+        VaultContract::init(&env, &vault_id, &admin, &admin); // admin acts as treasury
+        EventContract::init(&env, &event_id, &admin);
+
+        // Add liquidity so the pool can execute swaps
+        PoolContract::add_liq(&env, &lp_id, &provider, 1000000, 100000);
+        let (ra, rb) = PoolContract::get_reserves(&env, &lp_id);
+        assert!(ra > 0);
+        assert!(rb > 0);
+
+        // ─── Initialize Router with real contract addresses ──────────
+        let router_id = env.register_contract(None, RouterContract);
+        env.as_contract(&router_id, || {
+            RouterContract::init(
+                env.clone(),
+                admin.clone(),
+                lp_id.clone(),
+                registry_id.clone(),
+                vault_id.clone(),
+                event_id.clone(),
+            );
+        });
+
+        // ─── Execute swap through Router ─────────────────────────────
+        let out_val = Cell::new(0i128);
+        let fee_val = Cell::new(0i128);
+        let ok_val = Cell::new(false);
+
+        env.as_contract(&router_id, || {
+            let result = RouterContract::swap_exact_in(
+                env.clone(),
+                user.clone(),
+                xlm.clone(),
+                usdc.clone(),
+                10000,
+                1,
+                9999999999,
+            );
+            out_val.set(result.out);
+            fee_val.set(result.fee);
+            ok_val.set(result.ok);
+        });
+
+        assert!(ok_val.get(), "Swap should succeed");
+        assert!(out_val.get() > 0, "Should receive output tokens");
+        assert!(fee_val.get() > 0, "Should charge a fee");
+
+        // ─── Verify registry recorded the swap ───────────────────────
+        let swap_count = RegistryContract::get_count(&env, &registry_id);
+        assert_eq!(swap_count, 1, "Registry should have recorded 1 swap");
+
+        let last_swap = RegistryContract::get_last(&env, &registry_id);
+        assert_eq!(last_swap.sender, user);
+        assert_eq!(last_swap.in_asset, Symbol::new(&env, "XLM"));
+        assert_eq!(last_swap.out_asset, Symbol::new(&env, "USDC"));
+
+        // ─── Verify fee vault collected the fee ──────────────────────
+        let collected = VaultContract::get_collected(&env, &vault_id);
+        assert!(collected > 0, "Fee vault should have collected fees");
+        assert_eq!(collected, fee_val.get(), "Fee vault amount should match swap fee");
+
+        // ─── Verify event contract tracked the event ─────────────────
+        let event_count = EventContract::get_count(&env, &event_id);
+        assert_eq!(event_count, 1, "Event contract should have 1 event");
+
+        // ─── Verify LP reserves changed ──────────────────────────────
+        let (ra_after, rb_after) = PoolContract::get_reserves(&env, &lp_id);
+        assert_ne!((ra_after, rb_after), (ra, rb), "LP reserves should have changed");
+        assert!(ra_after > ra, "Reserve A should increase from swap input");
+        assert!(rb_after < rb, "Reserve B should decrease from swap output");
+    }
+
+    /// Verify Router propagates LP errors correctly when pool has no liquidity
+    #[test]
+    #[should_panic(expected = "Error(Contract, #301)")]
+    fn test_swap_fails_on_empty_pool() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let admin = Address::generate(&env);
+        let user = Address::generate(&env);
+
+        let xlm = Asset { code: Symbol::new(&env, "XLM"), issuer: None };
+        let usdc = Asset { code: Symbol::new(&env, "USDC"), issuer: None };
+
+        let lp_xlm = orbitswap_liquidity_pool::Asset { code: Symbol::new(&env, "XLM"), issuer: None };
+        let lp_usdc = orbitswap_liquidity_pool::Asset { code: Symbol::new(&env, "USDC"), issuer: None };
+
+        // Register all contracts but DON'T add liquidity to pool
+        let lp_id = env.register_contract(None, PoolContract);
+        let registry_id = env.register_contract(None, RegistryContract);
+        let vault_id = env.register_contract(None, VaultContract);
+        let event_id = env.register_contract(None, EventContract);
+
+        PoolContract::init(&env, &lp_id, &admin, lp_xlm, lp_usdc, 30);
+        RegistryContract::init(&env, &registry_id, &admin);
+        VaultContract::init(&env, &vault_id, &admin, &admin);
+        EventContract::init(&env, &event_id, &admin);
+
+        // Pool has zero liquidity — swap should fail
+        let router_id = env.register_contract(None, RouterContract);
+        env.as_contract(&router_id, || {
+            RouterContract::init(
+                env.clone(),
+                admin.clone(),
+                lp_id.clone(),
+                registry_id.clone(),
+                vault_id.clone(),
+                event_id.clone(),
+            );
+        });
+
+        // This should panic with CrossContractFailed (#301) because LP has no liquidity
+        env.as_contract(&router_id, || {
+            RouterContract::swap_exact_in(
+                env.clone(), user, xlm, usdc, 10000, 1, 9999999999,
+            );
+        });
     }
 
     #[test]
