@@ -403,7 +403,7 @@ Each contract crate includes unit tests for:
 | Contract deployment address | ✅ | 6 contracts deployed (see table above) |
 | Transaction hash for interaction | ✅ | [`93fb009761...`](https://stellar.expert/explorer/testnet/tx/93fb0097611e4835bf3182940deabf3c4279fa0121b8f564d6a200dffa947b47) |
 | Mobile responsive UI screenshot | ✅ | [`screenshots/mobile-home.png`](screenshots/mobile-home.png) |
-| CI/CD pipeline screenshot | ✅ | [GitHub Actions](https://github.com/CodingAngel1/OrbitSwap-Pro/actions) — 10-job matrix pipeline passing |
+| CI/CD pipeline screenshot | ✅ | [`screenshots/ci-pipeline.png`](screenshots/ci-pipeline.png) — 12-job matrix with Quality Gate |
 | Test output screenshot | ✅ | [`screenshots/test_results.txt`](screenshots/test_results.txt) — 74 tests passing |
 | Demo video link (1–2 min) | ✅ | [`screenshots/demo.mp4`](screenshots/demo.mp4) — see walkthrough below |
 
