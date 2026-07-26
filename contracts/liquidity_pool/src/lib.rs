@@ -131,6 +131,7 @@ impl PoolContract {
 mod test {
     use super::*;
     use soroban_sdk::testutils::Address as _;
+    use core::cell::Cell;
 
     #[test]
     fn test_add_remove() {
@@ -142,12 +143,26 @@ mod test {
         let ta = Asset { code: Symbol::new(&env, "XLM"), issuer: None };
         let tb = Asset { code: Symbol::new(&env, "USDC"), issuer: None };
 
-        PoolContract::init(&env, &id, &admin, ta, tb, 30);
-        let s = PoolContract::add_liq(&env, &id, &p, 1000000, 100000);
-        assert!(s > 0);
-        let (a, b) = PoolContract::get_reserves(&env, &id);
-        assert_eq!(a, 1000000);
-        assert_eq!(b, 100000);
+        env.as_contract(&id, || {
+            PoolContract::init(env.clone(), admin.clone(), ta.clone(), tb.clone(), 30);
+        });
+
+        let shares = Cell::new(0i128);
+        env.as_contract(&id, || {
+            let s = PoolContract::add_liq(env.clone(), p.clone(), 1000000, 100000);
+            shares.set(s);
+        });
+        assert!(shares.get() > 0);
+
+        let reserves_a = Cell::new(0i128);
+        let reserves_b = Cell::new(0i128);
+        env.as_contract(&id, || {
+            let (a, b) = PoolContract::get_reserves(env.clone());
+            reserves_a.set(a);
+            reserves_b.set(b);
+        });
+        assert_eq!(reserves_a.get(), 1000000);
+        assert_eq!(reserves_b.get(), 100000);
     }
 
     #[test]
@@ -160,10 +175,21 @@ mod test {
         let ta = Asset { code: Symbol::new(&env, "XLM"), issuer: None };
         let tb = Asset { code: Symbol::new(&env, "USDC"), issuer: None };
 
-        PoolContract::init(&env, &id, &admin, ta.clone(), tb.clone(), 30);
-        PoolContract::add_liq(&env, &id, &p, 1000000, 100000);
-        let (out, fee) = PoolContract::swap(&env, &id, ta, tb, 100000, 1);
-        assert!(out > 0);
-        assert!(fee > 0);
+        env.as_contract(&id, || {
+            PoolContract::init(env.clone(), admin.clone(), ta.clone(), tb.clone(), 30);
+        });
+        env.as_contract(&id, || {
+            PoolContract::add_liq(env.clone(), p.clone(), 1000000, 100000);
+        });
+
+        let out_val = Cell::new(0i128);
+        let fee_val = Cell::new(0i128);
+        env.as_contract(&id, || {
+            let (out, fee) = PoolContract::swap(env.clone(), ta, tb, 100000, 1);
+            out_val.set(out);
+            fee_val.set(fee);
+        });
+        assert!(out_val.get() > 0);
+        assert!(fee_val.get() > 0);
     }
 }

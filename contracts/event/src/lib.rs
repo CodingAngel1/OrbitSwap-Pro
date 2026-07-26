@@ -79,6 +79,7 @@ impl EventContract {
 mod test {
     use super::*;
     use soroban_sdk::testutils::Address as _;
+    use core::cell::Cell;
 
     #[test]
     fn test_emit_swap() {
@@ -87,9 +88,23 @@ mod test {
         let admin = Address::generate(&env);
         let user = Address::generate(&env);
         let id = env.register_contract(None, EventContract);
-        EventContract::init(&env, &id, &admin);
 
-        EventContract::emit_swap(&env, &id, user, Symbol::new(&env, "XLM"), Symbol::new(&env, "USDC"), 1000, 99, 3);
-        assert_eq!(EventContract::get_count(&env, &id), 1);
+        env.as_contract(&id, || {
+            EventContract::init(env.clone(), admin.clone());
+        });
+
+        env.as_contract(&id, || {
+            EventContract::emit_swap(
+                env.clone(), user,
+                Symbol::new(&env, "XLM"), Symbol::new(&env, "USDC"),
+                1000, 99, 3,
+            );
+        });
+
+        let count = Cell::new(0i128);
+        env.as_contract(&id, || {
+            count.set(EventContract::get_count(env.clone()));
+        });
+        assert_eq!(count.get(), 1);
     }
 }

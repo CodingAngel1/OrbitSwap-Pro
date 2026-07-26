@@ -57,6 +57,7 @@ impl RegistryContract {
 mod test {
     use super::*;
     use soroban_sdk::testutils::Address as _;
+    use core::cell::Cell;
 
     #[test]
     fn test_record() {
@@ -65,12 +66,30 @@ mod test {
         let admin = Address::generate(&env);
         let user = Address::generate(&env);
         let id = env.register_contract(None, RegistryContract);
-        RegistryContract::init(&env, &id, &admin);
 
-        RegistryContract::record(&env, &id, user.clone(), Symbol::new(&env, "XLM"), Symbol::new(&env, "USDC"), 1000, 99, 3);
-        assert_eq!(RegistryContract::get_count(&env, &id), 1);
+        env.as_contract(&id, || {
+            RegistryContract::init(env.clone(), admin.clone());
+        });
 
-        let last = RegistryContract::get_last(&env, &id);
-        assert_eq!(last.sender, user);
+        env.as_contract(&id, || {
+            RegistryContract::record(
+                env.clone(), user.clone(),
+                Symbol::new(&env, "XLM"), Symbol::new(&env, "USDC"),
+                1000, 99, 3,
+            );
+        });
+
+        let count = Cell::new(0i128);
+        env.as_contract(&id, || {
+            count.set(RegistryContract::get_count(env.clone()));
+        });
+        assert_eq!(count.get(), 1);
+
+        let last_sender = Cell::new(None::<Address>);
+        env.as_contract(&id, || {
+            let last = RegistryContract::get_last(env.clone());
+            last_sender.set(Some(last.sender));
+        });
+        assert_eq!(last_sender.get().unwrap(), user);
     }
 }

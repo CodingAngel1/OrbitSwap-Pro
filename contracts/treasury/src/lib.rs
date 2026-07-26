@@ -54,6 +54,7 @@ impl TreasuryContract {
 mod test {
     use super::*;
     use soroban_sdk::testutils::Address as _;
+    use core::cell::Cell;
 
     #[test]
     fn test_deposit_withdraw() {
@@ -61,11 +62,28 @@ mod test {
         env.mock_all_auths();
         let admin = Address::generate(&env);
         let id = env.register_contract(None, TreasuryContract);
-        TreasuryContract::init(&env, &id, &admin);
-        TreasuryContract::deposit(&env, &id, 10000);
-        assert_eq!(TreasuryContract::get_balance(&env, &id), 10000);
+
+        env.as_contract(&id, || {
+            TreasuryContract::init(env.clone(), admin.clone());
+        });
+        env.as_contract(&id, || {
+            TreasuryContract::deposit(env.clone(), 10000);
+        });
+
+        let bal = Cell::new(0i128);
+        env.as_contract(&id, || {
+            bal.set(TreasuryContract::get_balance(env.clone()));
+        });
+        assert_eq!(bal.get(), 10000);
+
         let r = Address::generate(&env);
-        TreasuryContract::withdraw(&env, &id, 500, &r);
-        assert_eq!(TreasuryContract::get_balance(&env, &id), 9500);
+        env.as_contract(&id, || {
+            TreasuryContract::withdraw(env.clone(), 500, r.clone());
+        });
+
+        env.as_contract(&id, || {
+            bal.set(TreasuryContract::get_balance(env.clone()));
+        });
+        assert_eq!(bal.get(), 9500);
     }
 }

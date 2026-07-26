@@ -54,6 +54,7 @@ impl VaultContract {
 mod test {
     use super::*;
     use soroban_sdk::testutils::Address as _;
+    use core::cell::Cell;
 
     #[test]
     fn test_deposit() {
@@ -62,9 +63,19 @@ mod test {
         let admin = Address::generate(&env);
         let t = Address::generate(&env);
         let id = env.register_contract(None, VaultContract);
-        VaultContract::init(&env, &id, &admin, &t);
-        VaultContract::deposit_fee(&env, &id, 1000);
-        assert_eq!(VaultContract::get_collected(&env, &id), 1000);
+
+        env.as_contract(&id, || {
+            VaultContract::init(env.clone(), admin.clone(), t.clone());
+        });
+        env.as_contract(&id, || {
+            VaultContract::deposit_fee(env.clone(), 1000);
+        });
+
+        let collected = Cell::new(0i128);
+        env.as_contract(&id, || {
+            collected.set(VaultContract::get_collected(env.clone()));
+        });
+        assert_eq!(collected.get(), 1000);
     }
 
     #[test]
@@ -74,9 +85,21 @@ mod test {
         let admin = Address::generate(&env);
         let t = Address::generate(&env);
         let id = env.register_contract(None, VaultContract);
-        VaultContract::init(&env, &id, &admin, &t);
-        VaultContract::deposit_fee(&env, &id, 1000);
-        VaultContract::distribute(&env, &id, 500);
-        assert_eq!(VaultContract::get_collected(&env, &id), 500);
+
+        env.as_contract(&id, || {
+            VaultContract::init(env.clone(), admin.clone(), t.clone());
+        });
+        env.as_contract(&id, || {
+            VaultContract::deposit_fee(env.clone(), 1000);
+        });
+        env.as_contract(&id, || {
+            VaultContract::distribute(env.clone(), 500);
+        });
+
+        let collected = Cell::new(0i128);
+        env.as_contract(&id, || {
+            collected.set(VaultContract::get_collected(env.clone()));
+        });
+        assert_eq!(collected.get(), 500);
     }
 }
