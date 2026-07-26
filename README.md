@@ -1,5 +1,26 @@
 # 🪐 OrbitSwap Pro
 
+<p align="center">
+  <a href="https://github.com/CodingAngel1/OrbitSwap-Pro/actions/workflows/ci.yml">
+    <img src="https://github.com/CodingAngel1/OrbitSwap-Pro/actions/workflows/ci.yml/badge.svg" alt="CI/CD" />
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License" />
+  </a>
+  <a href="https://effervescent-frangollo-fda9e7.netlify.app">
+    <img src="https://img.shields.io/badge/demo-Netlify-00C7B7.svg" alt="Live Demo" />
+  </a>
+  <a href="#-testing">
+    <img src="https://img.shields.io/badge/tests-74%20passed-brightgreen.svg" alt="Tests" />
+  </a>
+  <a href="#deployed-contracts-stellar-testnet">
+    <img src="https://img.shields.io/badge/contracts-6%20deployed-blueviolet.svg" alt="Contracts" />
+  </a>
+  <a href="https://soroban.stellar.org">
+    <img src="https://img.shields.io/badge/Soroban%20SDK-v27-7B61FF.svg" alt="Soroban SDK" />
+  </a>
+</p>
+
 **Production-grade decentralized trading powered by Stellar.**
 
 OrbitSwap Pro is a production-ready decentralized exchange (DEX) built on the
@@ -405,7 +426,7 @@ Each contract crate includes unit tests for:
 | Mobile responsive UI screenshot | ✅ | [`screenshots/mobile-home.png`](screenshots/mobile-home.png) |
 | CI/CD pipeline screenshot | ✅ | [`screenshots/ci-pipeline.png`](screenshots/ci-pipeline.png) — 12-job matrix with Quality Gate |
 | Test output screenshot | ✅ | [`screenshots/test_results.txt`](screenshots/test_results.txt) — 74 tests passing |
-| Demo video link (1–2 min) | ✅ | [`screenshots/demo.mp4`](screenshots/demo.mp4) — see walkthrough below |
+| Demo video link (1–2 min) | ✅ | See [▶️ Demo Video](#-demo-video) below — 2 min walkthrough |
 
 ---
 
@@ -426,6 +447,22 @@ Each contract crate includes unit tests for:
 - [ ] Advanced order types (limit orders)
 - [ ] Multi-hop routing
 - [ ] Yield farming / staking
+
+---
+
+---
+
+## 🎥 Demo Video
+
+<p align="center">
+  <a href="screenshots/demo.mp4">
+    <img src="https://img.shields.io/badge/▶%EF%B8%8F%20Watch%20Demo%20Video-2%20min-FF6B6B?style=for-the-badge&logo=vimeo&logoColor=white" alt="Watch Demo" />
+  </a>
+</p>
+
+> **👉 [Click here to watch the 2-minute walkthrough](screenshots/demo.mp4)**
+>
+> Covers wallet connection, token swap execution, asset explorer, transaction history, and real-time event streaming across the OrbitSwap Pro platform.
 
 ---
 
