@@ -23,8 +23,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-      - run: npm ci
+      - name: Clean npm cache and install
+        run: |
+          npm cache clean --force 2>/dev/null || true
+          npm ci
       - run: npm run lint
 
   frontend-typecheck:
@@ -36,8 +38,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-      - run: npm ci
+      - name: Clean npm cache and install
+        run: |
+          npm cache clean --force 2>/dev/null || true
+          npm ci
       - run: npm run typecheck
 
   frontend-test:
@@ -49,8 +53,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-      - run: npm ci
+      - name: Clean npm cache and install
+        run: |
+          npm cache clean --force 2>/dev/null || true
+          npm ci
       - run: npm run test:run
 
   frontend-build:
@@ -62,8 +68,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-      - run: npm ci
+      - name: Clean npm cache and install
+        run: |
+          npm cache clean --force 2>/dev/null || true
+          npm ci
       - run: npm run build
 
   # ─── Smart Contracts (Test on native target) ──────────────────────────

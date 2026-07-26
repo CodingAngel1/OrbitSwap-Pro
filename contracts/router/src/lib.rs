@@ -175,7 +175,7 @@ impl RouterContract {
 #[cfg(test)]
 mod test {
     use super::*;
-    use soroban_sdk::testutils::Address as _;
+    use soroban_sdk::testutils::{Address as _, Ledger as _};
     use soroban_sdk::IntoVal as _;
 
     #[test]
@@ -264,6 +264,8 @@ mod test {
         });
         let xlm = Asset { code: Symbol::new(&env, "XLM"), issuer: None };
         let usdc = Asset { code: Symbol::new(&env, "USDC"), issuer: None };
+        // Set ledger timestamp past the deadline (100) so DeadlineExpired triggers
+        env.ledger().set_timestamp(200);
         env.as_contract(&contract_id, || {
             RouterContract::swap_exact_in(env.clone(), user, xlm, usdc, 100, 1, 100);
         });
