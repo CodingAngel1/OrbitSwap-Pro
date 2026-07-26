@@ -4,11 +4,11 @@
   <a href="https://github.com/CodingAngel1/OrbitSwap-Pro/actions/workflows/ci.yml">
     <img src="https://github.com/CodingAngel1/OrbitSwap-Pro/actions/workflows/ci.yml/badge.svg" alt="CI/CD" />
   </a>
+  <a href="https://effervescent-frangollo-fda9e7.netlify.app">
+    <img src="https://img.shields.io/badge/deploy-Netlify%20Live-00C7B7?logo=netlify&style=flat-square" alt="Netlify Deploy" />
+  </a>
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License" />
-  </a>
-  <a href="https://effervescent-frangollo-fda9e7.netlify.app">
-    <img src="https://img.shields.io/badge/demo-Netlify-00C7B7.svg" alt="Live Demo" />
   </a>
   <a href="#-testing">
     <img src="https://img.shields.io/badge/tests-74%20passed-brightgreen.svg" alt="Tests" />
