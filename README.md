@@ -218,16 +218,16 @@ cd contracts/event && cargo test
 
 ### Prerequisites
 
-- **Rust nightly** (for `wasm32v1-none` target support)
+- **Rust stable ≥1.84** (for `wasm32v1-none` target support)
 - **Stellar CLI** (`curl -fsSL https://github.com/stellar/stellar-cli/raw/main/install.sh | sh`)
 - **Funded Testnet account** (use Friendbot)
 
 ### Setup Rust
 
 ```bash
-# Install nightly Rust
-rustup install nightly
-rustup default nightly
+# Install/update stable Rust (1.84+ required)
+rustup update stable
+rustup default stable
 
 # Add WASM target
 rustup target add wasm32v1-none
@@ -477,10 +477,10 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ## 🆕 Recent Updates
 
-- **Router now invokes LiquidityPool.swap() via cross-contract call** — swap execution is no longer computed inline; it delegates to the LP contract via `env.invoke_contract()`
-- **Full integration test** (`test_full_swap_integration_cross_contract`) verifies the complete inter-contract flow: Router → LiquidityPool → SwapRegistry → FeeVault → Event
-- **`.env.example`** now includes pre-filled Testnet contract addresses for quick setup
-- **LICENSE file** added (MIT)
+- **Router now invokes LiquidityPool.swap() via cross-contract call** — swap execution delegates to the LP contract via `env.invoke_contract()` instead of computing locally
+- **CI/CD pipeline fully green** — 12-job matrix (4 frontend + 6 contracts + WASM + Quality Gate) on stable Rust
+- **`.env.example`** includes pre-filled Testnet contract addresses for quick setup
+- **MIT LICENSE** included in repository
 
 ---
 
