@@ -407,7 +407,7 @@ Each contract crate includes unit tests for:
 ### Contract Test Summary
 | Contract | Tests | Coverage |
 |----------|-------|----------|
-| Router | 6 | Init, quote, full cross-contract integration, empty pool failure, zero amount, deadline |
+| Router | 4 | Init, quote, zero amount, deadline |
 | LiquidityPool | 2 | Add/remove liquidity, swap |
 | FeeVault | 2 | Deposit, distribute |
 | Treasury | 1 | Deposit/withdraw |
