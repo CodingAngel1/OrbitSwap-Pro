@@ -78,7 +78,7 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@nightly
+      - uses: dtolnay/rust-toolchain@stable
       - name: Test ${{ matrix.contract }}
         working-directory: contracts/${{ matrix.contract }}
         run: cargo test
@@ -90,7 +90,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@nightly
+      - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32v1-none
       - name: Build WASM
